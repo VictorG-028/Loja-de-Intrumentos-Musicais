@@ -1,0 +1,46 @@
+
+services:
+  apsoo_postgres:
+    image: postgres:15
+    ports:
+      - 5432:5432
+    container_name: apsoo_postgres
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_DB}
+    networks:
+      - apsoo_net
+    volumes:
+      - apsoo_db_data:/var/lib/postgresql/data
+
+  apsoo_api:
+    build:
+      context: .
+    ports:
+      - 3000:3000
+    container_name: apsoo_api
+    environment:
+      - DATABASE_URL=postgresql://${USER}:${PASSWORD}@${HOST}:${PORT}/${POSTGRES_DB}?schema=${SCHEMA}
+      - USER=${POSTGRES_USER}
+      - PASSWORD=${POSTGRES_PASSWORD}
+      - HOST=${HOST}
+      - PORT=${PORT}
+      - DATABASE=${POSTGRES_DB}
+      - SCHEMA=${SCHEMA}
+    depends_on:
+      - apsoo_postgres
+    networks:
+      - apsoo_net
+    volumes:
+      - .:/app
+      - /app/node_modules
+
+
+networks:
+  apsoo_net:
+    driver: "bridge"
+
+volumes:
+  apsoo_db_data:
+

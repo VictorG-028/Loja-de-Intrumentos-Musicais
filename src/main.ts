@@ -1,18 +1,31 @@
 import express from 'express';
 import Router from './routes/Router';
 
-const app = express();
 
-// Middleware global (opcional para parse de JSON)
-app.use(express.json());
+class Main {
+  private app: express.Application;
 
-// Rotas
-app.use(new Router().router);
+  constructor() {
+    this.app = express();
+    this.app.use(express.json());
+    const r = new Router();
+    this.app.use(r.router);
+    this.app.get('/', (req, res) => { res.send('Hello World!'); });
+    this.main();
+  }
 
-app.get('/', (req, res) => { res.send('Hello World!'); });
+  private start_server(): void {
+    const PORT = 3000;
+    this.app.listen(PORT, () => {
+      console.log(`Servidor rodando em http://localhost:${PORT}`);
+    });
+  }
 
-// Inicializar o servidor
-const PORT = 3000;
-app.listen(PORT, () => {
-  console.log(`Servidor rodando em http://localhost:${PORT}`);
-});
+  public main(): void {
+    this.start_server();
+  }
+}
+
+new Main();
+
+

@@ -1,0 +1,49 @@
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+model User {
+  id        String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid @unique
+  email     String   @unique
+  password  String
+  cart      Cart?    @relation
+  cartId    String?  @unique @db.Uuid
+}
+
+model Product {
+  id        String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  name      String
+  price     Float
+  quantity  Int
+  payments  Payment[]  @relation("OrderToProduct")
+  cart      Cart?    @relation("CartToProduct", fields: [cartId], references: [id])
+  cartId    String?  @db.Uuid
+}
+
+enum OrderStatus {
+  new @map("new")   
+  pending @map("pending")
+  done @map("done")
+}
+
+model Payment {
+  id            String      @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  idempotentId  String
+  userId        String
+  products      Product[]   @relation("OrderToProduct")
+  totalCost     Float
+  status        OrderStatus
+}
+
+model Cart {
+  id        String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid @unique
+  user      User?    @relation(fields: [userId], references: [id])
+  userId    String?  @unique @db.Uuid 
+  products  Product[] @relation("CartToProduct")
+}
